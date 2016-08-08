@@ -174,7 +174,7 @@ static int parse_args(int argc, char **argv, struct args *args)
 	 * 17 - Authentication Algorithm = HMAC-SHA256; Integrity Algorithm = HMAC_SHA256_128; Confidentiality Algorithm = AES-CBC-128
 	 */
 	args->config.k_g_len = 0;
-	args->config.privilege_level = IPMICONSOLE_PRIVILEGE_ADMIN;
+	args->config.privilege_level = IPMICONSOLE_PRIVILEGE_USER;
 	/*
 	 * IPMICONSOLE_PRIVILEGE_USER
 	 * IPMICONSOLE_PRIVILEGE_OPERATOR
