@@ -52,7 +52,7 @@ void set_sigterm_handler(int type)
 /******************************************************************************
  * ARGUMENT PARSING                                                           *
  ******************************************************************************/
-const char *short_opts = "h?vVu:p:L:";
+const char *short_opts = "h?vVu:p:L:w:";
 
 static struct option long_opts[] = {
 	{"help",	no_argument,		NULL,	'h'},
@@ -61,6 +61,7 @@ static struct option long_opts[] = {
 	{"user",	required_argument,	NULL,	'u'},
 	{"password",	required_argument,	NULL,	'p'},
 	{"port",	required_argument,	NULL,	'L'},
+	{"workaround",	required_argument,	NULL,	'w'},
 	{NULL, 0, NULL, 0} /* end of list */
 };
 
@@ -83,10 +84,12 @@ static void print_usage(char *argv0)
 	printf("  -u, --user [NAME]          User name for IPMI login\n");
 	printf("  -p, --password [PASSWORD]  Password for IPMI login\n");
 	printf("  -L, --port [NUMBER]        Listen on port NUMBER (default: %u)\n", LISTEN_PORT);
+	printf("  -w, --workaround [FLAG]    Enable a workaround flag, e.g.,\n"
+	       "                              intel2, supermicro2, sun2\n");
 	printf("\n");
 	printf("Example:\n");
 	printf("  # Start proxy\n");
-	printf("  %s -u ADMIN -p ADMIN ipmihost.localdomain\n", argv0);
+	printf("  %s -u ADMIN -p ADMIN -w supermicro2 ipmihost.localdomain\n", argv0);
 	printf("  # Connect to the proxy with telnet\n");
 	printf("  telnet localhost %u\n", LISTEN_PORT);
 }
@@ -238,6 +241,18 @@ static int parse_args(int argc, char **argv, struct args *args)
 		case 'L': /* listen_port */
 			if (parse_args_setval_int(&args->listen_port, optarg) < 0) {
 				eprintf("Specified listen port is invalid\n");
+				return -EINVAL;
+			}
+			break;
+		case 'w': /* worksaround */
+			if (strcmp("intel2", optarg) == 0) {
+				args->config.workaround_flags |= IPMICONSOLE_WORKAROUND_INTEL_2_0_SESSION;
+			} else if (strcmp("supermicro2", optarg) == 0) {
+				args->config.workaround_flags |= IPMICONSOLE_WORKAROUND_SUPERMICRO_2_0_SESSION;
+			} else if (strcmp("sun2", optarg) == 0) {
+				args->config.workaround_flags |= IPMICONSOLE_WORKAROUND_SUN_2_0_SESSION;
+			} else {
+				eprintf("Unknown workaround flag: %s\n", optarg);
 				return -EINVAL;
 			}
 			break;
